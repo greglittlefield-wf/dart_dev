@@ -15,8 +15,10 @@
 library dart_dev.src.tasks.test.cli;
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:path/path.dart' as path;
 
 import 'package:dart_dev/util.dart' show reporter, isPortBound;
 
@@ -47,6 +49,10 @@ class TestCli extends TaskCli {
     ..addOption('pub-serve-port',
         help:
             'Port used by the Pub server for browser tests. The default value will randomly select an open port to use.')
+    ..addFlag('precompile',
+        negatable: true,
+        defaultsTo: defaultPrecompile,
+        help: 'Precompiles dart2js test files before running. Can help prevent test load timeouts.')
     ..addOption('platform',
         abbr: 'p',
         allowMultiple: true,
@@ -83,6 +89,8 @@ class TestCli extends TaskCli {
     if (pubServePort is String) {
       pubServePort = int.parse(pubServePort);
     }
+
+    bool precompile = TaskCli.valueOf('precompile', parsedArgs, config.test.precompile);
 
     var concurrency =
         TaskCli.valueOf('concurrency', parsedArgs, config.test.concurrency);
@@ -183,6 +191,22 @@ class TestCli extends TaskCli {
       }
 
       additionalArgs.add('--pub-serve=$pubServePort');
+
+      if (precompile) {
+        reporter.logGroup('Precompiling tests to dart2js...');
+        var client = new HttpClient();
+
+        await Future.wait(tests.map((test) async {
+          if (path.extension(test) != '.dart') return;
+
+          var dartJsFile = path.relative(test, from: 'test') + '.js';
+
+          reporter.log('    Precompiling $dartJsFile...');
+          var request = await client.get('localhost', pubServePort, dartJsFile);
+          await request.close();
+          reporter.log('    Precompiled $dartJsFile');
+        }));
+      }
     }
 
     if (testNamed) {

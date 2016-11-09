@@ -19,6 +19,7 @@ import 'package:dart_dev/src/tasks/config.dart';
 const int defaultConcurrency = 4;
 const bool defaultPubServe = false;
 const int defaultPubServePort = 0;
+const bool defaultPrecompile = false;
 const bool defaultIntegration = false;
 const bool defaultFunctional = false;
 const List<String> defaultIntegrationTests = const [];
@@ -34,5 +35,6 @@ class TestConfig extends TaskConfig {
   List<String> platforms = defaultPlatforms;
   bool pubServe = defaultPubServe;
   int pubServePort = defaultPubServePort;
+  bool precompile = defaultPrecompile;
   List<String> unitTests = defaultUnitTests;
 }

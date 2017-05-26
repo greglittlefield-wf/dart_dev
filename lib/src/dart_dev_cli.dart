@@ -78,7 +78,7 @@ dev(List<String> args) async {
   try {
     LocalCli.discover(config.local.taskPaths).forEach((task, exec) {
       LocalCli localTask = new LocalCli(task, exec, originalArgs: args);
-      registerTask(localTask, config.local);
+      registerTask(localTask, config.local, allowOverride: true);
     });
   } on ArgumentError catch (e) {
     reporter.error('${e.message}\n\nPlease update your local configuration.',
@@ -90,7 +90,13 @@ dev(List<String> args) async {
   exit(exitCode);
 }
 
-void registerTask(TaskCli cli, TaskConfig config) {
+void registerTask(TaskCli cli, TaskConfig config, {bool allowOverride: false}) {
+  if (_cliTasks[cli.command] != null && !allowOverride) {
+     throw new ArgumentError(
+         'A task is attempting to use the task name "${cli.command}" which'
+         ' has already been registered.');
+   }
+
   _cliTasks[cli.command] = cli;
   _cliConfigs[cli.command] = config;
 }

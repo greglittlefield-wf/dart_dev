@@ -25,6 +25,7 @@ const String noTaskProject = 'test_fixtures/local/no_tasks';
 const String noExecutableProject = 'test_fixtures/local/no_executable';
 const String validTaskProject = 'test_fixtures/local/good_tasks';
 const String followSymlinkProject = 'test_fixtures/local/follow_symlinks';
+const String overrideTask = 'test_fixtures/local/override_task';
 const String noFollowSymlinkProject = 'test_fixtures/local/no_follow_symlinks';
 
 Future<TaskProcess> local(String projectPath,
@@ -86,6 +87,11 @@ void main() {
         () async {
       await expectOutput(local(noExecutableProject, taskArgs: ['noExec']),
           'An executable was not defined for the discovered task noExec.');
+    });
+
+    test('should allow a local task to override a built-in one', () async {
+      await expectOutput(local(overrideTask, taskArgs: ['analyze']),
+          'Custom local analyze task');
     });
 
     test('should contain discovered tasks when no dart_dev task given',

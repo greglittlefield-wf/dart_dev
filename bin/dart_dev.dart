@@ -16,8 +16,7 @@ library dart_dev.bin.dart_dev;
 
 import 'dart:io';
 
-import 'package:dart_dev/dart_dev.dart' show dev;
-import 'package:dart_dev/util.dart' show TaskProcess;
+import 'package:dart_dev/dart_dev.dart' deferred as dart_dev show dev;
 
 main(List<String> args) async {
   File devFile = new File('./tool/dev.dart');
@@ -25,13 +24,13 @@ main(List<String> args) async {
   if (devFile.existsSync()) {
     // If dev.dart exists, run that to allow configuration.
     var newArgs = [devFile.path]..addAll(args);
-    TaskProcess process = new TaskProcess('dart', newArgs);
-    process.stdout.listen(stdout.writeln);
-    process.stderr.listen(stderr.writeln);
-    await process.done;
+    var process = await Process.start('dart', newArgs);
+    process.stdout.pipe(stdout);
+    process.stderr.pipe(stderr);
     exitCode = await process.exitCode;
   } else {
     // Otherwise, run with defaults.
-    await dev(args);
+    await dart_dev.loadLibrary();
+    await dart_dev.dev(args);
   }
 }
